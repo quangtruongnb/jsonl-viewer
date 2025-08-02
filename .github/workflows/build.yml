@@ -43,11 +43,14 @@ jobs:
         CC: x86_64-w64-mingw32-gcc
         CXX: x86_64-w64-mingw32-g++
         
+    - name: List Windows build output
+      run: ls -la build/bin/
+        
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       with:
         name: jsonl-viewer-windows
-        path: build/bin/jsonl-viewer.exe
+        path: build/bin/
         retention-days: 30
 
   build-macos:
@@ -80,11 +83,14 @@ jobs:
     - name: Build for macOS
       run: wails build -platform darwin/universal -skipbindings
       
+    - name: List build output
+      run: ls -la build/bin/
+      
     - name: Upload macOS artifact
       uses: actions/upload-artifact@v4
       with:
         name: jsonl-viewer-macos
-        path: build/bin/jsonl-viewer.app
+        path: build/bin/
         retention-days: 30
 
   create-release:
@@ -109,13 +115,30 @@ jobs:
     - name: Create release archive
       run: |
         mkdir -p release
+        
+        # Copy Windows executable
         cp dist/windows/jsonl-viewer.exe release/
-        cp -r dist/macos/jsonl-viewer.app release/
+        
+        # Copy macOS app bundle (handle different possible names)
+        if [ -d "dist/macos/jsonl-viewer.app" ]; then
+          cp -r dist/macos/jsonl-viewer.app release/
+        elif [ -f "dist/macos/jsonl-viewer" ]; then
+          cp dist/macos/jsonl-viewer release/
+        else
+          echo "Error: No macOS build found"
+          ls -la dist/macos/
+          exit 1
+        fi
         
         # Create zip files
         cd release
         zip -r jsonl-viewer-windows.zip jsonl-viewer.exe
-        zip -r jsonl-viewer-macos.zip jsonl-viewer.app
+        
+        if [ -d "jsonl-viewer.app" ]; then
+          zip -r jsonl-viewer-macos.zip jsonl-viewer.app
+        else
+          zip jsonl-viewer-macos.zip jsonl-viewer
+        fi
         
     - name: Upload release assets
       uses: actions/upload-release-asset@v1
