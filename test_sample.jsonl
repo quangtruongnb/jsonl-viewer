@@ -1,0 +1,6 @@
+{"name": "John", "age": 30, "city": "New York"}
+{"name": "Jane", "age": 25, "city": "Los Angeles"}
+{"name": "Bob", "age": 35, "city": "Chicago"}
+
+{"invalid": "json", "missing": "quote}
+{"name": "Alice", "age": 28, "city": "Seattle"}
