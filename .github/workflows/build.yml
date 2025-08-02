@@ -87,47 +87,10 @@ jobs:
         path: build/bin/jsonl-viewer.app
         retention-days: 30
 
-  build-linux:
-    name: Build Linux Executable
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
-        
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-        
-    - name: Install Wails CLI
-      run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-      
-    - name: Install frontend dependencies
-      working-directory: frontend
-      run: npm ci
-      
-    - name: Build for Linux
-      run: wails build -platform linux/amd64 -skipbindings
-      
-    - name: Upload Linux artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: jsonl-viewer-linux
-        path: build/bin/jsonl-viewer
-        retention-days: 30
-
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [build-windows, build-macos, build-linux]
+    needs: [build-windows, build-macos]
     if: github.event_name == 'release'
     
     steps:
@@ -143,24 +106,16 @@ jobs:
         name: jsonl-viewer-macos
         path: dist/macos
         
-    - name: Download Linux artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: jsonl-viewer-linux
-        path: dist/linux
-        
     - name: Create release archive
       run: |
         mkdir -p release
         cp dist/windows/jsonl-viewer.exe release/
         cp -r dist/macos/jsonl-viewer.app release/
-        cp dist/linux/jsonl-viewer release/
         
         # Create zip files
         cd release
         zip -r jsonl-viewer-windows.zip jsonl-viewer.exe
         zip -r jsonl-viewer-macos.zip jsonl-viewer.app
-        tar -czf jsonl-viewer-linux.tar.gz jsonl-viewer
         
     - name: Upload release assets
       uses: actions/upload-release-asset@v1
@@ -182,12 +137,4 @@ jobs:
         asset_name: jsonl-viewer-macos.zip
         asset_content_type: application/zip
         
-    - name: Upload Linux asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./release/jsonl-viewer-linux.tar.gz
-        asset_name: jsonl-viewer-linux.tar.gz
-        asset_content_type: application/gzip 
+ 

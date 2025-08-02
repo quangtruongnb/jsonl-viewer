@@ -23,25 +23,18 @@ To build a redistributable, production mode package, use `wails build`.
 
 ## GitHub Actions
 
-This project includes automated build workflows:
-
-### Test Build (`test.yml`)
-- Runs on every push and pull request
-- Tests builds on Windows, macOS, and Linux
-- Ensures the application builds successfully on all platforms
+This project includes an automated build workflow:
 
 ### Release Build (`build.yml`)
 - Runs on releases and main branch pushes
 - Creates cross-platform executables:
   - **Windows**: `jsonl-viewer.exe` (with embedded WebView2)
   - **macOS**: `jsonl-viewer.app` (universal binary)
-  - **Linux**: `jsonl-viewer` (ELF executable)
 - Automatically creates release assets when a GitHub release is published
 
 ### Usage
 
-1. **For Testing**: Push to any branch to trigger test builds
-2. **For Releases**: 
+1. **For Releases**: 
    - Create a GitHub release
    - Assets will be automatically uploaded
    - Download the appropriate file for your platform
@@ -50,4 +43,3 @@ This project includes automated build workflows:
 
 - **Windows**: `jsonl-viewer-windows.zip` (contains `jsonl-viewer.exe`)
 - **macOS**: `jsonl-viewer-macos.zip` (contains `jsonl-viewer.app`)
-- **Linux**: `jsonl-viewer-linux.tar.gz` (contains `jsonl-viewer` executable)
