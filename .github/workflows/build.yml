@@ -8,6 +8,10 @@ on:
   release:
     types: [ published ]
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build-windows:
     name: Build Windows Executable
@@ -141,23 +145,12 @@ jobs:
         fi
         
     - name: Upload release assets
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./release/jsonl-viewer-windows.zip
-        asset_name: jsonl-viewer-windows.zip
-        asset_content_type: application/zip
-        
-    - name: Upload macOS asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./release/jsonl-viewer-macos.zip
-        asset_name: jsonl-viewer-macos.zip
-        asset_content_type: application/zip
+      run: |
+        gh release upload ${{ github.event.release.tag_name }} \
+          ./release/jsonl-viewer-windows.zip \
+          ./release/jsonl-viewer-macos.zip \
+          --clobber
         
  
