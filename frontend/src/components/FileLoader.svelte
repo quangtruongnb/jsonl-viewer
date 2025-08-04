@@ -3,6 +3,8 @@
   import { OpenFile, LoadJSONLFile, LoadJSONLFromClipboard } from '../../wailsjs/go/main/App.js';
   import { actions } from '../stores';
   import type { JSONLFile } from '../types';
+  import {LogInfo, LogError} from '../../wailsjs/runtime'
+  
 
   const dispatch = createEventDispatcher<{
     fileLoaded: JSONLFile;
@@ -40,9 +42,11 @@
       const errorMessage = error instanceof Error ? error.message : 'Failed to load file';
       actions.setError(errorMessage);
       dispatch('error', errorMessage);
+      LogError(errorMessage)
     } finally {
       isLoadingFile = false;
       actions.setLoading(false);
+      LogInfo("Loaded")
     }
   }
 
@@ -66,9 +70,11 @@
       const errorMessage = error instanceof Error ? error.message : 'Failed to load from clipboard';
       actions.setError(errorMessage);
       dispatch('error', errorMessage);
+      LogError(errorMessage)
     } finally {
       isLoadingClipboard = false;
       actions.setLoading(false);
+      LogInfo("Loaded")
     }
   }
 

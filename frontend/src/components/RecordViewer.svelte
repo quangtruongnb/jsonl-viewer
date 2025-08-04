@@ -17,6 +17,7 @@
     fieldsToHide,
   } from "../stores";
   import type { JSONRecord } from "../types";
+  import { LogError, LogInfo } from "../../wailsjs/runtime";
 
   const dispatch = createEventDispatcher<{
     recordSelected: JSONRecord;
@@ -58,13 +59,8 @@
     currentPage = 1; // Reset to first page for search results
     paginateSearchResults();
   } else if (!$searchQuery && $currentFile) {
-    // No search, load records normally - reset total count and reload
-    if ($records.length === 0) {
-      // Records were cleared (likely from search clear), reload from backend
-      initializeRecords();
-    } else {
-      loadCurrentPage();
-    }
+    currentPage = 1;
+    loadCurrentPage();
   }
 
   // Create a reactive key that changes when field visibility changes
@@ -165,8 +161,10 @@
       const errorMessage =
         err instanceof Error ? err.message : "Failed to initialize records";
       actions.setError(errorMessage);
+      LogError(errorMessage)
     } finally {
       isLoadingRecords = false;
+      LogInfo("Records initialized")
     }
   }
 
@@ -181,8 +179,10 @@
     } catch (err) {
       console.error("Failed to load page:", err);
       actions.setError("Failed to load records");
+      LogError("Failed to load records")
     } finally {
       isLoadingRecords = false;
+      LogInfo("Loaded page")
     }
   }
 
@@ -364,7 +364,7 @@
       <h3>No File Loaded</h3>
       <p>Load a JSONL file to view records</p>
     </div>
-  {:else if isLoadingRecords && currentRecords.length === 0}
+  {:else if isLoadingRecords}
     <div class="loading-state">
       <div class="loading-spinner"></div>
       <p>Loading records...</p>

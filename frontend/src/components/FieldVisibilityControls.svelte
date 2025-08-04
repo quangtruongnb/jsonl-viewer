@@ -29,7 +29,11 @@
     async function extractAvailableFieldsFromBackend() {
         try {
             const fields = await GetAllFields();
-            actions.setAvailableFields(fields);
+            if (!fields) {
+                actions.setAvailableFields([]);
+            } else {
+                actions.setAvailableFields(fields);
+            }
         } catch (error) {
             console.error('Failed to get fields from backend:', error);
             actions.setAvailableFields([]);
