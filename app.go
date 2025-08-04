@@ -1048,7 +1048,6 @@ func (a *App) SearchRecords(options SearchOptions) (*SearchResult, error) {
 		// Use Lucene syntax parsing
 		luceneQuery := parseLuceneQuery(options.Query)
 
-		println(luceneQuery.Query)
 		if luceneQuery != nil {
 			for _, record := range a.cache.records {
 				if a.evaluateLuceneQuery(luceneQuery, record, options.CaseSensitive) {
@@ -1154,24 +1153,36 @@ func parseLuceneQuery(query string) *LuceneQuery {
 	// Handle OR operator
 	if strings.Contains(query, " OR ") {
 		parts := strings.Split(query, " OR ")
-		if len(parts) == 2 {
-			return &LuceneQuery{
-				Type:  "or",
-				Left:  parseLuceneQuery(strings.TrimSpace(parts[0])),
-				Right: parseLuceneQuery(strings.TrimSpace(parts[1])),
+		if len(parts) >= 2 {
+			// For multiple OR conditions, create left-associative tree
+			left := parseLuceneQuery(strings.TrimSpace(parts[0]))
+			for i := 1; i < len(parts); i++ {
+				right := parseLuceneQuery(strings.TrimSpace(parts[i]))
+				left = &LuceneQuery{
+					Type:  "or",
+					Left:  left,
+					Right: right,
+				}
 			}
+			return left
 		}
 	}
 
 	// Handle AND operator
 	if strings.Contains(query, " AND ") {
 		parts := strings.Split(query, " AND ")
-		if len(parts) == 2 {
-			return &LuceneQuery{
-				Type:  "and",
-				Left:  parseLuceneQuery(strings.TrimSpace(parts[0])),
-				Right: parseLuceneQuery(strings.TrimSpace(parts[1])),
+		if len(parts) >= 2 {
+			// For multiple AND conditions, create left-associative tree
+			left := parseLuceneQuery(strings.TrimSpace(parts[0]))
+			for i := 1; i < len(parts); i++ {
+				right := parseLuceneQuery(strings.TrimSpace(parts[i]))
+				left = &LuceneQuery{
+					Type:  "and",
+					Left:  left,
+					Right: right,
+				}
 			}
+			return left
 		}
 	}
 
