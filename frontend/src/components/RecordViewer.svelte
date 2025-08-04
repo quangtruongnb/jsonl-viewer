@@ -270,25 +270,27 @@
     }
   }
 
-  function highlightJson(jsonString: string): string {
-    console.log('Highlighting JSON:', jsonString);
-    
-    let highlighted = jsonString
-      // First, highlight punctuation to avoid conflicts
-      .replace(/([{}[\],])/g, '<span class="json-punctuation">$1</span>')
-      // Then highlight keys (property names) - match quoted strings followed by colon
-      .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
-      // Then highlight string values - match colon followed by quoted strings
-      .replace(/:\s*"([^"]*)"/g, ': <span class="json-string">"$1"</span>')
-      // Then highlight numbers (including decimals and negative numbers)
-      .replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
-      // Then highlight booleans
-      .replace(/:\s*(true|false)/g, ': <span class="json-boolean">$1</span>')
-      // Finally highlight null
-      .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
-    
-    console.log('Highlighted result:', highlighted);
-    return highlighted;
+  function highlightJson(jsonString: string): string {  
+    let json = jsonString;
+    if (typeof json != 'string') {
+        json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'json-number';
+        if (/^\"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'json-key';
+            } else {
+                cls = 'json-string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+            cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
   }
 
   function copyToClipboard(text: string) {
@@ -1061,30 +1063,30 @@
 
   /* JSON Syntax Highlighting - These classes are dynamically generated in JavaScript */
   /* DO NOT REMOVE - Used for JSON syntax highlighting in modal */
-  .json-key {
+   :global(.json-key) {
     color: #4fc1ff !important;
     font-weight: 500;
   }
 
-  .json-string {
+  :global(.json-string) {
     color: #ff8c42 !important;
   }
 
-  .json-number {
+  :global(.json-number) {
     color: #98c379 !important;
   }
 
- .json-boolean {
+  :global(.json-boolean) {
     color: #569cd6 !important;
     font-weight: 500;
   }
 
-  .json-null {
+  :global(.json-null) {
     color: #569cd6 !important;
     font-weight: 500;
   }
 
-  .json-punctuation {
+  :global(.json-punctuation) {
     color: #e6e6e6 !important;
   }
 
